@@ -32,21 +32,7 @@ var Screen = {
 
       var previous_mouse_x = null, previous_mouse_y = null;
       var mouse_down = false;
-      var key_down = null;
 
-      $('html').keydown(function(_event) {
-        if(event.altKey) {
-          key_down = 'scale';
-        }
-        if(event.ctrlKey) {
-          key_down = 'rotate';
-        }
-      });
-      
-      $('html').keyup(function(event) {
-        key_down = null;
-      });
-      
       $(selector).mousedown(function(event) {
         mouse_down = true;
       });
@@ -62,6 +48,7 @@ var Screen = {
         if(previous_mouse_x != null) {
           var delta_x = event.clientX - previous_mouse_x;
           var delta_y = event.clientY - previous_mouse_y;
+          var key_down = that.get_key_down(event);
           if(!key_down && mouse_down) {
             that.do_translate(delta_x, delta_y, _screen);
           } else if(key_down == 'scale') {
@@ -87,7 +74,16 @@ var Screen = {
     rotate: 0,
     scale: 1
   },
-    
+  get_key_down: function(event) {
+    if(event.altKey) {
+      return 'scale';
+    }
+    if(event.ctrlKey) {
+      return 'rotate';
+    }
+    return null;
+  },
+      
   update_canvas: function(canvas, group, _screen, animate) {
     if(animate) {
       var interpolator = function(old_value, target_value) {
@@ -163,20 +159,20 @@ var Screen = {
   },
   
   container_scale_factor: function() {
-	var factor = this.container.attr('viewBox').baseVal.width / this.container.width();
+	var factor = this.container.attr('viewBox').baseVal.width / this.container[0].getBBox().width;
 	if(factor == 0) {
-		return 1
+		return 1;
 	} else {
 		return factor;
 	};
   },
   
   center_offset_x: function() {
-    return this.container.width() / 2.0 * this.container_scale_factor();
+    return this.container[0].getBBox().width / 2.0 * this.container_scale_factor();
   },
   
   center_offset_y: function() {
-    return this.container.height() / 2.0 * this.container_scale_factor();
+    return this.container[0].getBBox().height / 2.0 * this.container_scale_factor();
   },
   
   do_translate: function(delta_x, delta_y, _screen) {
